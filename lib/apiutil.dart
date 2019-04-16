@@ -30,4 +30,17 @@ class APIUtil {
     otpMap['mobile_no'] = int.parse(phoneNumber);
     return json.encode(otpMap);
   }
+
+  /*
+  This method used to send request body for loan details
+   */
+  Map<String, Object> prepareRequestBodyForPersonDetails(
+      String userId, String loanTypeId, String loanAmount, int loanTenor) {
+    Map<String, Object> personMap = new Map<String, Object>();
+    personMap['user_id'] = int.parse(userId);
+    personMap['loan_type_id'] = int.parse(loanTypeId);
+    personMap['loan_amount'] = int.parse(loanAmount);
+    personMap['loan_tenor'] = loanTenor;
+    return personMap;
+  }
 }

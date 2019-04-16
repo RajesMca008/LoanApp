@@ -1,5 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
+import 'package:loan_app/Constant.dart';
+import 'package:loan_app/ProgessBar.dart';
+import 'package:loan_app/apiutil.dart';
+import 'package:loan_app/httphelper.dart';
 import 'dart:math';
 
 import 'package:loan_app/personaldetails.dart';
@@ -12,6 +19,7 @@ class LoanDetails extends StatefulWidget {
 final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
 class LoanDetailsState extends State<LoanDetails> {
+  bool isLoadingVisible = false;
   final TextEditingController loanAmountController =
       new TextEditingController();
   int tenureValue;
@@ -35,116 +43,151 @@ class LoanDetailsState extends State<LoanDetails> {
   bool isEmiDisplay = false;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(title: Text('Calculate Loan')),
-      body: ListView(
-        padding: EdgeInsets.all(10.0),
-        children: <Widget>[
-          Text(
-            "Loan Amount Value",
-            style: TextStyle(
-                color: Colors.blue,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold),
-          ),
-          TextField(
-            inputFormatters: [
-              BlacklistingTextInputFormatter(new RegExp('[\\.|\\,|\\- |\\ ]'))
-            ],
-            controller: loanAmountController,
-            maxLength: 12,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelStyle: TextStyle(
-                fontSize: 18.0,
+    return ProgressBar(
+        inAsyncCall: isLoadingVisible,
+        opacity: 0.0,
+        valueColor: new AlwaysStoppedAnimation<Color>(Colors.blue),
+        child: Scaffold(
+          key: _scaffoldKey,
+          appBar: AppBar(title: Text('Calculate Loan')),
+          body: ListView(
+            padding: EdgeInsets.all(10.0),
+            children: <Widget>[
+              Text(
+                "Loan Amount Value",
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold),
               ),
-              focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                color: Colors.blue,
-              )),
-            ),
-            style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w400,
-                fontSize: 18.0),
-          ),
-          Text(
-            "Tenture In Years",
-            style: TextStyle(
-                color: Colors.blue,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold),
-          ),
-          new DropdownButton<int>(
-              value: tenureValue,
-              isExpanded: true,
-              onChanged: (int newValue) {
-                setState(() {
-                  tenureValue = newValue;
-                  //fetchDetails();
-                });
-              },
-              items: tenureList.map((int data) {
-                return new DropdownMenuItem<int>(
-                    value: data, child: new Text(data.toString()));
-              }).toList()),
-          Text(
-            "Interest Rate",
-            style: TextStyle(
-                color: Colors.blue,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold),
-          ),
-          new DropdownButton<double>(
-              value: interestValue,
-              isExpanded: true,
-              onChanged: (double newValue) {
-                setState(() {
-                  interestValue = newValue;
-                  //fetchDetails();
-                });
-              },
-              items: interestRateList.map((double data) {
-                return new DropdownMenuItem<double>(
-                    value: data, child: new Text(data.toString()));
-              }).toList()),
-          RaisedButton(
-              color: Colors.blue,
-              onPressed: () {
-                performLoanCalc();
-              },
-              child: Text(
-                "Calculate Loan EMI",
-                style: TextStyle(
-                  color: Colors.white,
+              TextField(
+                inputFormatters: [
+                  BlacklistingTextInputFormatter(
+                      new RegExp('[\\.|\\,|\\- |\\ ]'))
+                ],
+                controller: loanAmountController,
+                maxLength: 12,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelStyle: TextStyle(
+                    fontSize: 18.0,
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                    color: Colors.blue,
+                  )),
                 ),
-              )),
-          isEmiDisplay
-              ? Text(
-                  "You have to pay an EMI of INR $finalEMI/- on your loan.",
-                  style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 19.0),
-                  textAlign: TextAlign.center,
-                )
-              : Text(""),
-          RaisedButton(
-              color: Colors.blue,
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => PersonalDetails()));
-              },
-              child: Text(
-                "Request Loan",
                 style: TextStyle(
-                  color: Colors.white,
-                ),
-              )),
-        ],
-      ),
-    );
+                    color: Colors.black,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 18.0),
+              ),
+              Text(
+                "Tenture In Years",
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold),
+              ),
+              new DropdownButton<int>(
+                  value: tenureValue,
+                  isExpanded: true,
+                  onChanged: (int newValue) {
+                    setState(() {
+                      tenureValue = newValue;
+                      //fetchDetails();
+                    });
+                  },
+                  items: tenureList.map((int data) {
+                    return new DropdownMenuItem<int>(
+                        value: data, child: new Text(data.toString()));
+                  }).toList()),
+              Text(
+                "Interest Rate",
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold),
+              ),
+              new DropdownButton<double>(
+                  value: interestValue,
+                  isExpanded: true,
+                  onChanged: (double newValue) {
+                    setState(() {
+                      interestValue = newValue;
+                      //fetchDetails();
+                    });
+                  },
+                  items: interestRateList.map((double data) {
+                    return new DropdownMenuItem<double>(
+                        value: data, child: new Text(data.toString()));
+                  }).toList()),
+              RaisedButton(
+                  color: Colors.blue,
+                  onPressed: () {
+                    performLoanCalc();
+                  },
+                  child: Text(
+                    "Calculate Loan EMI",
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  )),
+              isEmiDisplay
+                  ? Text(
+                      "You have to pay an EMI of INR $finalEMI/- on your loan.",
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 19.0),
+                      textAlign: TextAlign.center,
+                    )
+                  : Text(""),
+              RaisedButton(
+                  color: Colors.blue,
+                  onPressed: () {
+                    setState(() {
+                      isLoadingVisible = true;
+                      APIUtil util = APIUtil.getApiUtil();
+                      HttpHelper.getHttpHelper()
+                          .performPostRequestAction1(
+                              Constant.LOAN_DETAILS,
+                              util.prepareRequestBodyForPersonDetails("14", "1",
+                                  loanAmountController.text, tenureValue))
+                          .then((response) {
+                        Response loanDetailsResponse = response;
+                        var responseData =
+                            json.decode(loanDetailsResponse.body);
+                        print(responseData);
+                        if (responseData != null &&
+                            responseData['status'] == 1) {
+                          isLoadingVisible = false;
+                          /*Util.saveSharedPreferenceInString("MobileNumber", null);*/
+                          showInSnackBarBlack(
+                              _scaffoldKey, responseData['msg']);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PersonalDetails()));
+                        } else {
+                          setState(() {
+                            isLoadingVisible = false;
+                          });
+                          showInSnackBarBlack(
+                              _scaffoldKey, responseData['msg']);
+                        }
+                      });
+                    });
+                  },
+                  child: Text(
+                    "Request Loan",
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  )),
+            ],
+          ),
+        ));
   }
 
   void performLoanCalc() {

@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:loan_app/Constant.dart';
 import 'package:loan_app/LoanDetails.dart';
+import 'package:loan_app/apiutil.dart';
 import 'package:loan_app/bankdetails.dart';
+import 'package:loan_app/httphelper.dart';
 import 'package:loan_app/login.dart';
 import 'package:loan_app/util.dart';
 
@@ -100,9 +105,27 @@ class DashboardState extends State<Dashboard> {
                 ),
                 new ListTile(
                   title: new Text('Logout'),
-                  onTap: () {
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (context) => Login()));
+                  onTap: () async {
+                    APIUtil util = APIUtil.getApiUtil();
+                    HttpHelper.getHttpHelper()
+                        .performPostRequest(
+                            Constant.LOGOUT,
+                            util.sendOtpRequestBody(
+                              await Util.getMobileNumber(),
+                            ))
+                        .then((response) {
+                      Response logoutResponse = response;
+                      var responseData = json.decode(logoutResponse.body);
+                      if (responseData != null && responseData['status'] == 1) {
+                        /*Util.saveSharedPreferenceInString("MobileNumber", null);*/
+                        showInSnackBarBlack(_scaffoldKey, responseData['msg']);
+                        Navigator.pushReplacement(context,
+                            MaterialPageRoute(builder: (context) => Login()));
+                      } else {
+                        showInSnackBarBlack(_scaffoldKey,
+                            "Something went wrong! Please try again");
+                      }
+                    });
                   },
                 ),
                 new Divider(
@@ -140,8 +163,8 @@ class DashboardState extends State<Dashboard> {
 
   @override
   void initState() {
-    super.initState();
     getUserDetails();
+    super.initState();
   }
 
   getUserDetails() async {

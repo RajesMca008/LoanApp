@@ -1,7 +1,14 @@
+import 'dart:convert';
+
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:loan_app/Constant.dart';
+import 'package:loan_app/apiutil.dart';
+import 'package:loan_app/httphelper.dart';
 import 'package:loan_app/professionaldetails.dart';
+import 'package:loan_app/util.dart';
 
 class PersonalDetails extends StatefulWidget {
   @override
@@ -25,6 +32,7 @@ class PersonalDetailsState extends State<PersonalDetails> {
     InputType.date: DateFormat('yyyy-MM-dd'),
     InputType.time: DateFormat("HH:mm"),
   };
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,7 +164,7 @@ class PersonalDetailsState extends State<PersonalDetails> {
             ),
             RaisedButton(
                 color: Colors.blue,
-                onPressed: () {
+                onPressed: () async {
                   if (performValidations()) {
                     Navigator.push(
                         context,

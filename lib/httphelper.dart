@@ -41,18 +41,22 @@ class HttpHelper {
    */
 
   Future<Object> performPostRequest(String url, String requestBody) async {
+    print("Request URL:" + url);
     bool isConnected = await AppContext().initConnectivity();
 
     if (isConnected == false) return false;
 
     http.Response response = await http.post(Uri.parse(url),
-        headers: {"content-type": "application/json"},
+        encoding: Encoding.getByName("utf-8"),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
         body: requestBody); //, encoding: Encoding.getByName("UTF-8")
 
     try {
       if (response.statusCode == 200) {
         // If the call to the server was successful, parse the JSON
-        print(json.decode(response.body));
         return response;
       }
     } catch (e) {
@@ -72,6 +76,29 @@ class HttpHelper {
 
   Future<Object> performPostRequestAction(
       String url, String requestBody) async {
+    bool isConnected = await AppContext().initConnectivity();
+
+    if (isConnected == false) return false;
+
+    http.Response response = await http.post(Uri.parse(url),
+        headers: {"content-type": "application/json"},
+        body: requestBody); //, encoding: Encoding.getByName("UTF-8")
+
+    if (response.statusCode == 200) {
+      // If the call to the server was successful, parse the JSON
+      print(json.decode(response.body));
+      var responseJson = json.decode(response.body);
+      if (responseJson['status'] == 1) return true;
+      return false;
+    } else {
+      // If that call was not successful, throw an error.
+      // return false;
+      return throw Exception('Something went wrong Please try again!');
+    }
+  }
+
+  Future<Object> performPostRequestAction1(
+      String url, Map<String, Object> requestBody) async {
     bool isConnected = await AppContext().initConnectivity();
 
     if (isConnected == false) return false;
