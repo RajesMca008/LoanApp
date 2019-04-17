@@ -108,27 +108,35 @@ class LoginState extends State<Login> {
                                 "UserName", userController.text.toString());
                             APIUtil util = APIUtil.getApiUtil();
                             HttpHelper.getHttpHelper()
-                                .performPostRequest(
-                                    Constant.SEND_OTP_URL,
-                                    util.sendOtpRequestBody(
-                                        userController.text))
+                                .performPostRequestWithEncodedFormat(
+                                    Constant.VERIFY_OTP,
+                                    util.verifyOtpRequestBody(
+                                        userController.text,
+                                        otpController.text))
                                 .then((response) {
                               if (response != null) {
                                 Response otpResponse = response;
-                                var sendOtpResponse =
+                                var verifyOtpResponse =
                                     json.decode(otpResponse.body);
-                                showInSnackBarBlack(
-                                    _scaffoldKey, sendOtpResponse["msg"]);
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => Dashboard()));
+                                if (verifyOtpResponse['Status'] != 'Fail') {
+                                  Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Dashboard()));
+                                } else {
+                                  Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Dashboard()));
+                                  showInSnackBarBlack(
+                                      _scaffoldKey, verifyOtpResponse["msg"]);
+                                }
                               } else {
                                 //TODO Need to change
-                                Navigator.pushReplacement(
+                                /* Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => Dashboard()));
+                                        builder: (context) => Dashboard()));*/
                               }
 
                               setState(() {

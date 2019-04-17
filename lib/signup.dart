@@ -145,7 +145,7 @@ class SignUpState extends State<SignUp> {
                                 if (signUpResponseData["status"] == 1) {
                                   isLoadingVisible = false;
                                   HttpHelper.getHttpHelper()
-                                      .performPostRequest(
+                                      .performPostRequestWithEncodedFormat(
                                           Constant.SEND_OTP_URL,
                                           util.sendOtpRequestBody(
                                               mobileController.text))

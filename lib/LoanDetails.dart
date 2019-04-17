@@ -146,38 +146,42 @@ class LoanDetailsState extends State<LoanDetails> {
               RaisedButton(
                   color: Colors.blue,
                   onPressed: () {
-                    setState(() {
-                      isLoadingVisible = true;
-                      APIUtil util = APIUtil.getApiUtil();
-                      HttpHelper.getHttpHelper()
-                          .performPostRequestAction1(
-                              Constant.LOAN_DETAILS,
-                              util.prepareRequestBodyForPersonDetails("14", "1",
-                                  loanAmountController.text, tenureValue))
-                          .then((response) {
-                        Response loanDetailsResponse = response;
-                        var responseData =
-                            json.decode(loanDetailsResponse.body);
-                        print(responseData);
-                        if (responseData != null &&
-                            responseData['status'] == 1) {
-                          isLoadingVisible = false;
-                          /*Util.saveSharedPreferenceInString("MobileNumber", null);*/
-                          showInSnackBarBlack(
-                              _scaffoldKey, responseData['msg']);
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => PersonalDetails()));
-                        } else {
-                          setState(() {
-                            isLoadingVisible = false;
-                          });
-                          showInSnackBarBlack(
-                              _scaffoldKey, responseData['msg']);
-                        }
+                    if (performValidations()) {
+                      setState(() {
+                        isLoadingVisible = true;
+                        APIUtil util = APIUtil.getApiUtil();
+                        HttpHelper.getHttpHelper()
+                            .performPostRequestWithEncodedFormat(
+                                Constant.LOAN_DETAILS,
+                                util.prepareRequestBodyForLoanDetails("14", "1",
+                                    loanAmountController.text, tenureValue))
+                            .then((response) {
+                          Response loanDetailsResponse = response;
+                          var responseData =
+                              json.decode(loanDetailsResponse.body);
+                          print(responseData);
+                          if (responseData != null &&
+                              responseData['status'] == 1) {
+                            setState(() {
+                              isLoadingVisible = false;
+                            });
+                            /*Util.saveSharedPreferenceInString("MobileNumber", null);*/
+                            showInSnackBarBlack(
+                                _scaffoldKey, responseData['msg']);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => PersonalDetails()));
+                          } else {
+                            setState(() {
+                              isLoadingVisible = false;
+                            });
+                            showInSnackBarBlack(
+                                _scaffoldKey, responseData['msg']);
+                          }
+                        });
                       });
-                    });
+                    }
                   },
                   child: Text(
                     "Request Loan",

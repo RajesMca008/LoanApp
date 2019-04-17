@@ -108,7 +108,7 @@ class DashboardState extends State<Dashboard> {
                   onTap: () async {
                     APIUtil util = APIUtil.getApiUtil();
                     HttpHelper.getHttpHelper()
-                        .performPostRequest(
+                        .performPostRequestWithEncodedFormat(
                             Constant.LOGOUT,
                             util.sendOtpRequestBody(
                               await Util.getMobileNumber(),

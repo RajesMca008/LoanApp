@@ -97,27 +97,43 @@ class HttpHelper {
     }
   }
 
-  Future<Object> performPostRequestAction1(
+  /*
+  This method used to perform http post request handling
+   */
+
+  Future<Object> performPostRequestWithEncodedFormat(
       String url, Map<String, Object> requestBody) async {
+    print("Request URL:" + url);
     bool isConnected = await AppContext().initConnectivity();
 
     if (isConnected == false) return false;
 
     http.Response response = await http.post(Uri.parse(url),
-        headers: {"content-type": "application/json"},
+        encoding: Encoding.getByName("utf-8"),
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
         body: requestBody); //, encoding: Encoding.getByName("UTF-8")
 
-    if (response.statusCode == 200) {
+    try {
+      if (response.statusCode == 200) {
+        // If the call to the server was successful, parse the JSON
+        return response;
+      }
+    } catch (e) {
+      print("exception" + e.toString());
+      return null;
+    }
+    /*if (response.statusCode == 200) {
       // If the call to the server was successful, parse the JSON
       print(json.decode(response.body));
-      var responseJson = json.decode(response.body);
-      if (responseJson['status'] == 1) return true;
-      return false;
+      return response;
     } else {
       // If that call was not successful, throw an error.
       // return false;
       return throw Exception('Something went wrong Please try again!');
-    }
+    }*/
   }
 
   Future<Object> downloadDataFromServer(String url, String body) async {
